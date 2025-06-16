@@ -26,11 +26,11 @@ public with sharing class ObtenerlinkCortoBitly {
             String baseUrl = URL.getOrgDomainUrl().toExternalForm();
             System.debug('🌐 Dominio Salesforce: ' + baseUrl);
 
-            String longUrl = baseUrl + '/lightning/r/Tanque_Industrial__c/' + tanque.Id + '/view';
-            System.debug('🔗 URL larga generada: ' + longUrl);
+            String linkLargo = baseUrl + '/lightning/r/Tanque_Industrial__c/' + tanque.Id + '/view';
+            System.debug('🔗 URL larga generada: ' + linkLargo);
 
             // Obtener la versión acortada usando la API de Bitly
-            String shortUrl = obtenerShortLinkBitly(longUrl);
+            String shortUrl = obtenerShortLinkBitly(linkLargo);
             System.debug('🔁 Resultado de obtenerShortLinkBitly: ' + shortUrl);
 
             // Si se obtuvo correctamente el link corto, se actualiza el tanque
@@ -52,45 +52,45 @@ public with sharing class ObtenerlinkCortoBitly {
     /**
      * Realiza la llamada HTTP a la API de Bitly para acortar una URL larga.
      * 
-     * @param longUrl URL completa del registro en Salesforce que se quiere acortar.
+     * @param linkLargo URL completa del registro en Salesforce que se quiere acortar.
      * @return Link corto generado por Bitly o null si hubo error.
      */
-    private static String obtenerShortLinkBitly(String longUrl) {
-        System.debug('➡️ Entrando a obtenerShortLinkBitly con URL: ' + longUrl);
+    private static String obtenerShortLinkBitly(String linkLargo) {
+    System.debug('➡️ Entrando a obtenerShortLinkBitly con URL: ' + linkLargo);
 
-        // Crear la solicitud HTTP
-        HttpRequest req = new HttpRequest();
-        req.setEndpoint('https://api-ssl.bitly.com/v4/shorten');
-        req.setMethod('POST');
-        req.setHeader('Authorization', 'Bearer 77a164515136eed801785afd059ac9aab8370ca9'); // 🔐 Token Bitly (¡debe ocultarse en producción!)
-        req.setHeader('Content-Type', 'application/json');
+    // Crear la solicitud HTTP
+    HttpRequest req = new HttpRequest();
+    req.setEndpoint('https://api-ssl.bitly.com/v4/shorten');
+    req.setMethod('POST');
+    req.setHeader('Authorization', 'Bearer eecf4f1bdb9e0d55f3b850a1de2dbfbe897259a4'); // 🔐 Token Bitly (¡debe ocultarse en producción!)
+    req.setHeader('Content-Type', 'application/json');
 
-        // Armar payload JSON
-        req.setBody('{"long_url": "' + longUrl + '"}');
-        System.debug('📤 Payload enviado a Bitly: ' + req.getBody());
+    // Armar payload JSON
+    req.setBody('{"long_url": "' + linkLargo + '"}');
+    System.debug('📤 Payload enviado a Bitly: ' + req.getBody());
 
-        Http http = new Http();
-        try {
-            // Enviar la solicitud a Bitly
-            HttpResponse res = http.send(req);
-            System.debug('📥 Código de respuesta Bitly: ' + res.getStatusCode());
-            System.debug('📄 Cuerpo respuesta Bitly: ' + res.getBody());
+    Http http = new Http();
+    try {
+        // Enviar la solicitud a Bitly
+        HttpResponse res = http.send(req);
+        System.debug('📥 Código de respuesta Bitly: ' + res.getStatusCode());
+        System.debug('📄 Cuerpo respuesta Bitly: ' + res.getBody());
 
-            // Si la respuesta fue exitosa (200 o 201), extraer el link
-            if (res.getStatusCode() == 200 || res.getStatusCode() == 201) {
-                Map<String, Object> json = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
-                String linkCorto = (String) json.get('link');
-                System.debug('✅ Link corto recibido: ' + linkCorto);
-                return linkCorto;
-            } else {
-                System.debug('⚠️ Bitly respondió con código inesperado: ' + res.getStatusCode());
-            }
-
-        } catch (Exception e) {
-            System.debug('❌ Excepción al llamar a Bitly: ' + e.getMessage());
+        // Si la respuesta fue exitosa (200 o 201), extraer el link
+        if (res.getStatusCode() == 200 || res.getStatusCode() == 201) {
+            Map<String, Object> json = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            String linkCorto = (String) json.get('link');
+            System.debug('✅ Link corto recibido: ' + linkCorto);
+            return linkCorto;
+        } else {
+            System.debug('⚠️ Bitly respondió con código inesperado: ' + res.getStatusCode() + '. Usando link largo.');
+            return linkLargo; // ⚠️ Retornar el link largo si Bitly no respondió correctamente
         }
 
-        System.debug('⛔ Fin de obtenerShortLinkBitly sin resultado');
-        return null;
-    }
+    } catch (Exception e) {
+        System.debug('❌ Excepción al llamar a Bitly: ' + e.getMessage());
+        return linkLargo;
+    } 
+}
+
 }

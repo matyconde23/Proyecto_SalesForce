@@ -1,5 +1,5 @@
 @isTest
-public class OpportunityCreatorTest {
+public class CrearOportunidadAutomaticaTest {
 
     /**
      * Test unitario para verificar el comportamiento del método

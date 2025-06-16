@@ -1,106 +1,132 @@
 import { LightningElement, track } from 'lwc';
 import crearTanquesDesdeCSV from '@salesforce/apex/CargaMasivaTanquesCSV.crearTanquesDesdeCSV';
-import getTipos from '@salesforce/apex/CargaMasivaTanquesCSV.getTipos';
+import obtenerTiposTanque from '@salesforce/apex/CargaMasivaTanquesCSV.obtenerTiposTanques';
 import PapaParse from '@salesforce/resourceUrl/papaparse';
 import { loadScript } from 'lightning/platformResourceLoader';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class TanqueUploader extends LightningElement {
-    @track tipoOptions = [];
+    @track tipoOpciones = [];
     @track tipoSeleccionado;
-    @track datosPreview = [];
-    papaParseInitialized = false;
+    @track datosPrevios = [];
+    papaParseCargado = false;
 
+    // Se ejecuta al cargar el componente
     connectedCallback() {
         loadScript(this, PapaParse)
             .then(() => {
-                console.log('✅ PapaParse cargado:', window.Papa);
-                this.papaParseInitialized = true;
+                console.log('✅ PapaParse cargado');
+                this.papaParseCargado = true;
                 this.cargarTiposDeTanque();
             })
-            .catch(error => {
-                console.error('❌ Error PapaParse:', error);
-                this.showError('Error cargando PapaParse');
+            .catch((error) => {
+                console.error('❌ Error cargando PapaParse:', error);
+                this.mostrarError('Error cargando PapaParse');
             });
     }
 
+    // Llama a Apex para obtener los tipos de tanque
     cargarTiposDeTanque() {
-        getTipos()
-            .then(result => {
-                this.tipoOptions = result.map(tipo => ({
+        obtenerTiposTanque()
+            .then((resultado) => {
+                this.tipoOpciones = resultado.map((tipo) => ({
                     label: tipo.Name,
                     value: tipo.Id
                 }));
+                console.log('📄 Tipos de tanque cargados:', this.tipoOpciones);
             })
-            .catch(error => {
-                this.showError('Error cargando tipos de tanque');
+            .catch((error) => {
+                console.error('❌ Error al obtener tipos:', error);
+                this.mostrarError('Error cargando tipos de tanque');
             });
     }
 
-    handleTipoChange(event) {
-        this.tipoSeleccionado = event.detail.value;
+    // Guarda el tipo de tanque seleccionado
+    cambiarTipoSeleccionado(evento) {
+        this.tipoSeleccionado = evento.detail.value;
+        console.log('🏷 Tipo seleccionado:', this.tipoSeleccionado);
     }
 
-    handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (!file || !this.papaParseInitialized) {
-            this.showError('PapaParse no está listo o no seleccionaste un archivo');
+    // Maneja el archivo CSV subido por el usuario
+    manejarCargaDeArchivo(evento) {
+        const archivo = evento.target.files[0];
+
+        if (!archivo || !this.papaParseCargado) {
+            this.mostrarError('PapaParse no está listo o no seleccionaste un archivo');
             return;
         }
-    
-        window.Papa.parse(file, {
+
+        console.log('📂 Archivo seleccionado:', archivo.name);
+
+        window.Papa.parse(archivo, {
             header: true,
             skipEmptyLines: true,
-            complete: (results) => {
-                const capacidades = results.data.map((row, i) => {
-                    return {
-                        Capacidad__c: row['Capacidad'],
-                        key: `${i}-${row['Capacidad']}`
-                    };
-                }).filter(row => row.Capacidad__c);
-    
-                this.datosPreview = capacidades;
-    
-                const cantidadCandidatos = capacidades.length;
-    
+            complete: (resultado) => {
+                console.log('🧾 Resultados parseados:', resultado.data);
+
+                const filasValidas = resultado.data
+                    .map((fila, i) => {
+                        console.log(`🔍 Fila ${i + 1}:`, fila);
+                        return {
+                            Capacidad__c: fila['Capacidad'],
+                            Numero_fabricacion__c: fila['Numero_fabricacion'],
+                            key: `${i}-${fila['Capacidad']}-${fila['Numero_fabricacion']}`
+                        };
+                    })
+                    .filter((fila) => fila.Capacidad__c);
+
+                console.log('✅ Datos filtrados para Apex:', filasValidas);
+
+                this.datosPrevios = filasValidas;
+                const cantidad = filasValidas.length;
+
                 crearTanquesDesdeCSV({
                     tipoTanqueId: this.tipoSeleccionado,
-                    datos: capacidades
+                    datos: filasValidas
                 })
-                .then(() => {
-                    this.showSuccess(`Intento de carga de ${cantidadCandidatos} tanques finalizado correctamente.`);
-                })
-                .catch(error => {
-                    console.error('❌ Error en Apex:', error);
-                    this.showError(error.body?.message || 'Error al cargar los tanques.');
-                });
+                    .then(() => {
+                        this.mostrarExito(`Se cargaron ${cantidad} tanques correctamente.`);
+                        console.log('✅ Tanques creados correctamente.');
+                    })
+                    .catch((error) => {
+                        console.error('❌ Error en Apex:', error);
+                        this.mostrarError(error.body?.message || 'Error al cargar los tanques.');
+                    });
             },
-            error: (err) => {
-                this.showError('Error procesando el CSV');
-                console.error(err);
+            error: (error) => {
+                console.error('❌ Error al parsear CSV:', error);
+                this.mostrarError('Error procesando el archivo CSV');
             }
         });
     }
-    get datosPreviewFormateados() {
-        return this.datosPreview.map(row => ({
-            key: row.key,
-            texto: `Capacidad: ${row.Capacidad__c}`
+
+    // Vista previa de los datos antes de enviar
+    get vistaPreviaFormateada() {
+        return this.datosPrevios.map((fila) => ({
+            key: fila.key,
+            texto: `Capacidad: ${fila.Capacidad__c}`
         }));
     }
 
-    showSuccess(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Éxito',
-            message,
-            variant: 'success'
-        }));
+    // Muestra un mensaje de éxito
+    mostrarExito(mensaje) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Éxito',
+                message: mensaje,
+                variant: 'success'
+            })
+        );
     }
 
-    showError(message) {
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Error',
-            message,
-            variant: 'error'
-        }));
+    // Muestra un mensaje de error
+    mostrarError(mensaje) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Error',
+                message: mensaje,
+                variant: 'error'
+            })
+        );
     }
 }

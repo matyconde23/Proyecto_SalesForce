@@ -2,25 +2,28 @@
     <lightning-card title="Carga Masiva de Tanques" icon-name="custom:custom63">
         <div class="slds-p-around_medium">
 
+            <!-- Combo para seleccionar el tipo de tanque -->
             <lightning-combobox
                 name="tipo"
                 label="Tipo de Tanque"
                 placeholder="Seleccione uno"
-                options={tipoOptions}
-                onchange={handleTipoChange}>
+                options={tipoOpciones}
+                onchange={cambiarTipoSeleccionado}>
             </lightning-combobox>
 
+            <!-- Input para subir el archivo CSV -->
             <lightning-input 
                 type="file" 
                 accept=".csv"
                 label="Archivo CSV"
-                onchange={handleFileUpload}>
+                onchange={manejarCargaDeArchivo}>
             </lightning-input>
 
-            <template if:true={datosPreviewFormateados}>
+            <!-- Vista previa de los datos parseados -->
+            <template if:true={vistaPreviaFormateada}>
                 <div class="slds-m-top_medium">
                     <p><strong>Vista previa:</strong></p>
-                    <template for:each={datosPreviewFormateados} for:item="row">
+                    <template for:each={vistaPreviaFormateada} for:item="row">
                         <p key={row.key}>{row.texto}</p>
                     </template>
                 </div>

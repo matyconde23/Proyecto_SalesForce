@@ -1,5 +1,5 @@
 @isTest
-public class OpportunityCreatorPedidoTanqueTest {
+public class CrearPedidoDesdeConversionTest {
 
     /**
      * Test unitario que valida el comportamiento del método crearOportunidadDesdeLead
@@ -34,7 +34,7 @@ public class OpportunityCreatorPedidoTanqueTest {
 
         // 🚀 Ejecutar lógica dentro de Test.startTest() y Test.stopTest()
         Test.startTest();
-        Opportunity opp = OpportunityCreator.crearOportunidadDesdeLead(lead.Id);
+        Opportunity opp = CrearOportunidadAutomatica.crearOportunidadDesdeLead(lead.Id);
         Test.stopTest();
 
         // ✅ Validaciones

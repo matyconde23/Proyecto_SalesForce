@@ -1,4 +1,4 @@
-public with sharing class OpportunityCloseWon {
+public with sharing class CerrarOportunidadVendida {
 
     /**
      * Procesa una lista de oportunidades marcadas como cerradas y ganadas.
