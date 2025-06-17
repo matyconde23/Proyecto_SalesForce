@@ -35,7 +35,7 @@ public class CrearOportunidadDesdeCuenta {
                 continue;
             }
 
-            // ✅ Asignar el precio correctamente
+            //  Asignar el precio correctamente
             opp.Amount = tanque.Tipo_de_Tanque__r.Precio_de_lista__c;
 
             // Cambiar estado del tanque

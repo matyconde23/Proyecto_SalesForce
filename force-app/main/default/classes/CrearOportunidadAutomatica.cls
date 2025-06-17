@@ -11,18 +11,18 @@ public with sharing class CrearOportunidadAutomatica {
      * @throws AuraHandledException Si no se encuentra un tipo de tanque compatible
      */
     public static Opportunity crearOportunidadDesdeLead(Id leadId) {
-        System.debug('🔥 INICIO: crearOportunidadDesdeLead ejecutado');
+        System.debug(' INICIO: crearOportunidadDesdeLead ejecutado');
 
-        // 🔍 Traer datos del Lead
+        //  Traer datos del Lead
         Lead lead = [
             SELECT Id, Capacidad__c, Precio_minimo__c, Precio_maximo__c, Company, OwnerId, ConvertedOpportunityId
             FROM Lead
             WHERE Id = :leadId
             LIMIT 1
         ];
-        System.debug('🔍 Lead cargado: ' + lead);
+        System.debug(' Lead cargado: ' + lead);
 
-        // 🔒 Validar que exista al menos un tipo de tanque con la capacidad del lead
+        // Validar que exista al menos un tipo de tanque con la capacidad del lead
         Boolean existeTipoConEsaCapacidad = [
             SELECT COUNT()
             FROM Tipo_de_tanque__c
@@ -30,7 +30,7 @@ public with sharing class CrearOportunidadAutomatica {
         ] > 0;
 
         if (!existeTipoConEsaCapacidad) {
-            System.debug('❌ No existe ningún tipo de tanque con capacidad ' + lead.Capacidad__c);
+            System.debug(' No existe ningún tipo de tanque con capacidad ' + lead.Capacidad__c);
             throw new AuraHandledException('No existe ningún tipo de tanque con la capacidad indicada en el Lead (' + lead.Capacidad__c + '). Verificá los datos ingresados.');
         }
 
@@ -75,12 +75,12 @@ public with sharing class CrearOportunidadAutomatica {
         }
 
         if (tiposAdecuados.isEmpty()) {
-            System.debug('❌ No se encontró tipo de tanque adecuado');
+            System.debug(' No se encontró tipo de tanque adecuado');
             throw new AuraHandledException('No se encontró un tipo de tanque que cumpla con los criterios del cliente.');
         }
 
         Tipo_de_tanque__c tipoSeleccionado = tiposAdecuados[0];
-        System.debug('✅ Tipo seleccionado: ' + tipoSeleccionado);
+        System.debug('Tipo seleccionado: ' + tipoSeleccionado);
 
         // Buscar tanque disponible de ese tipo (por ID directo)
         List<Tanque_Industrial__c> tanquesDisponibles = [
@@ -103,7 +103,7 @@ public with sharing class CrearOportunidadAutomatica {
                 LIMIT 1
             ];
 
-            // ✅ Evitar duplicación: si ya tiene tanque o pedido, no hacer nada
+            //  Evitar duplicación: si ya tiene tanque o pedido, no hacer nada
             if (opp.Tanque_seleccionado__c != null || opp.Pedido_Tanque__c != null) {
                 System.debug('⚠️ La oportunidad ya tiene tanque o pedido asignado. Se evita duplicación.');
                 return opp;
@@ -129,7 +129,7 @@ public with sharing class CrearOportunidadAutomatica {
             tanqueAsignado.Estado__c = 'Reservado';
             update tanqueAsignado;
 
-            System.debug('✅ Tanque asignado y reservado: ' + tanqueAsignado.Id);
+            System.debug(' Tanque asignado y reservado: ' + tanqueAsignado.Id);
         } else {
             // Solo crear pedido si no hay uno ya asignado
             if (opp.Pedido_Tanque__c == null) {
@@ -142,9 +142,9 @@ public with sharing class CrearOportunidadAutomatica {
                 opp.Pedido_Tanque__c = pedido.Id;
                 opp.Tanque_seleccionado__c = null;
 
-                System.debug('📋 Pedido creado y asignado: ' + pedido.Id);
+                System.debug(' Pedido creado y asignado: ' + pedido.Id);
             } else {
-                System.debug('⚠️ La oportunidad ya tenía un pedido asignado. No se crea uno nuevo.');
+                System.debug(' La oportunidad ya tenía un pedido asignado. No se crea uno nuevo.');
             }
         }
 
@@ -162,16 +162,16 @@ public with sharing class CrearOportunidadAutomatica {
             cuenta.Precio_maximo__c = lead.Precio_maximo__c;
             update cuenta;
 
-            System.debug('✅ Cuenta actualizada correctamente con ID: ' + cuenta.Id);
+            System.debug(' Cuenta actualizada correctamente con ID: ' + cuenta.Id);
         } else {
-            System.debug('⚠️ La oportunidad no tiene AccountId, no se pudo actualizar la cuenta.');
+            System.debug(' La oportunidad no tiene AccountId, no se pudo actualizar la cuenta.');
         }
 
         // Asignar precio de venta
         opp.Precio_de_venta__c = tipoSeleccionado.Precio_de_lista__c;
         update opp;
 
-        System.debug('📦 Oportunidad actualizada: ' + opp.Id);
+        System.debug(' Oportunidad actualizada: ' + opp.Id);
         return opp;
     }
 }

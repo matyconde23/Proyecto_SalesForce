@@ -6,7 +6,7 @@ public class GeneradorNumeroSerie {
      */
     public static void asignarNumeroSerie(List<Tanque_Industrial__c> tanques) {
         if (tanques == null || tanques.isEmpty()) {
-            System.debug('🔍 Lista de tanques vacía o nula. Fin del proceso.');
+            System.debug(' Lista de tanques vacía o nula. Fin del proceso.');
             return;
         }
 

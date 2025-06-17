@@ -10,11 +10,11 @@ public with sharing class ValidacionLead {
      */
     public static void validarLeads(List<Lead> leads) {
         for (Lead l : leads) {
-            System.debug('🔍 Validando Lead: ' + l);
+            System.debug(' Validando Lead: ' + l);
 
             // Verificamos que los campos requeridos estén completos
             if (l.Capacidad__c != null && l.Precio_minimo__c != null && l.Precio_maximo__c != null) {
-                System.debug('✅ Campos completos. Capacidad: ' + l.Capacidad__c +
+                System.debug(' Campos completos. Capacidad: ' + l.Capacidad__c +
                              ', Precio mínimo: ' + l.Precio_minimo__c +
                              ', Precio máximo: ' + l.Precio_maximo__c);
 
@@ -32,14 +32,14 @@ public with sharing class ValidacionLead {
 
                 // Si no hay resultados, lanzamos un error en el Lead
                 if (tipos.isEmpty()) {
-                    System.debug('❌ No hay ningún tipo de tanque compatible. Lanzando error.');
+                    System.debug(' No hay ningún tipo de tanque compatible. Lanzando error.');
                     l.addError('No hay tanques en nuestro catálogo que coincidan con la capacidad y el rango de precios indicado.');
                 } else {
-                    System.debug('✅ Se encontró al menos un tipo compatible. Todo ok.');
+                    System.debug(' Se encontró al menos un tipo compatible. Todo ok.');
                 }
 
             } else {
-                System.debug('⚠️ Campos insuficientes para validar el Lead. Se omite la verificación.');
+                System.debug(' Campos insuficientes para validar el Lead. Se omite la verificación.');
             }
         }
     }

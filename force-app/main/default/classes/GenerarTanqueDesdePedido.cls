@@ -24,7 +24,7 @@ public class GenerarTanqueDesdePedido {
             }
         }
 
-        // ✅ Si no hay pedidos confirmados, salir del proceso
+        //  Si no hay pedidos confirmados, salir del proceso
         if (pedidosConfirmadosIds.isEmpty()) return;
 
         // 🗂 Paso 2: Obtener los pedidos confirmados desde base de datos
@@ -58,7 +58,7 @@ public class GenerarTanqueDesdePedido {
         // 🔨 Insertar los nuevos tanques
         insert tanquesACrear;
 
-        // 🔄 Paso 5: Asignar el nuevo tanque a la oportunidad y remover el pedido
+        //  Paso 5: Asignar el nuevo tanque a la oportunidad y remover el pedido
         List<Opportunity> oportunidadesActualizar = new List<Opportunity>();
         for (Integer i = 0; i < oportunidades.size(); i++) {
             Opportunity opp = oportunidades[i];
@@ -70,10 +70,10 @@ public class GenerarTanqueDesdePedido {
             oportunidadesActualizar.add(opp);
         }
 
-        // 💾 Actualizar las oportunidades con el nuevo tanque asignado
+        //  Actualizar las oportunidades con el nuevo tanque asignado
         update oportunidadesActualizar;
 
-        // 🟠 Paso 6: Cambiar estado de los tanques de "Disponible" a "Reservado"
+        // Paso 6: Cambiar estado de los tanques de "Disponible" a "Reservado"
         for (Tanque_Industrial__c t : tanquesACrear) {
             t.Estado__c = 'Reservado';
         }

@@ -1,7 +1,7 @@
 public class CambioTanqueOportunidadService {
 
     /**
-     * Procesa los cambios de tanque en una lista de oportunidades.
+     * Procesa los cambios de tanque en una oportunidad.
      *
      * Si el campo `Tanque_seleccionado__c` cambia:
      * - Marca el tanque anterior como "Disponible".
@@ -24,13 +24,13 @@ public class CambioTanqueOportunidadService {
         // Mapa que relaciona cada nuevo tanque con la oportunidad que lo seleccionó
         Map<Id, Opportunity> oportunidadesConNuevoTanque = new Map<Id, Opportunity>();
 
-        // 🔄 Iterar por todas las oportunidades para detectar cambios de tanque
+        // Iterar por todas las oportunidades para detectar cambios de tanque
         for (Opportunity opp : newList) {
             Opportunity oldOpp = oldMap.get(opp.Id);
 
             // Solo actuar si cambió el tanque seleccionado
             if (opp.Tanque_seleccionado__c != oldOpp.Tanque_seleccionado__c) {
-                System.debug('🔁 Cambio de tanque detectado en oportunidad: ' + opp.Id);
+                System.debug(' Cambio de tanque detectado en oportunidad: ' + opp.Id);
 
                 // Si había un tanque anterior → se marca como Disponible
                 if (oldOpp.Tanque_seleccionado__c != null) {
@@ -55,10 +55,10 @@ public class CambioTanqueOportunidadService {
         // 🔧 Actualizar estados de los tanques si hay alguno que cambió
         if (!tanquesActualizar.isEmpty()) {
             update tanquesActualizar;
-            System.debug('✅ Tanques actualizados: ' + tanquesActualizar.size());
+            System.debug('Tanques actualizados: ' + tanquesActualizar.size());
         }
 
-        // 💲 Obtener precio de lista del tipo de tanque y actualizar precio en oportunidad
+        //  Obtener precio de lista del tipo de tanque y actualizar precio en oportunidad
         if (!nuevosTanquesIds.isEmpty()) {
             Map<Id, Tanque_Industrial__c> tanquesConTipo = new Map<Id, Tanque_Industrial__c>(
                 [SELECT Id, Tipo_de_tanque__r.Precio_de_lista__c
@@ -71,7 +71,7 @@ public class CambioTanqueOportunidadService {
                 if (opp != null) {
                     Decimal nuevoPrecio = tanquesConTipo.get(tanqueId).Tipo_de_tanque__r.Precio_de_lista__c;
                     opp.Precio_de_venta__c = nuevoPrecio;
-                    System.debug('💵 Precio de venta actualizado en memoria para oportunidad ' + opp.Id + ': ' + nuevoPrecio);
+                    System.debug(' Precio de venta actualizado en memoria para oportunidad ' + opp.Id + ': ' + nuevoPrecio);
                 }
             }
         }

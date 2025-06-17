@@ -35,9 +35,9 @@ public with sharing class CargaMasivaTanquesCSV {
      */
     @AuraEnabled
     public static void crearTanquesDesdeCSV(Id tipoTanqueId, List<Map<String, String>> datos) {
-        System.debug('🔁 INICIO - crearTanquesDesdeCSV');
-        System.debug('📥 Tipo de tanque recibido: ' + tipoTanqueId);
-        System.debug('📊 Total de filas recibidas desde CSV: ' + datos.size());
+        System.debug(' INICIO - crearTanquesDesdeCSV');
+        System.debug(' Tipo de tanque recibido: ' + tipoTanqueId);
+        System.debug('Total de filas recibidas desde CSV: ' + datos.size());
 
     // Obtener tipo de tanque
         Tipo_de_tanque__c tipo = [
@@ -46,7 +46,7 @@ public with sharing class CargaMasivaTanquesCSV {
             WHERE Id = :tipoTanqueId
             LIMIT 1
         ];
-        System.debug('✅ Tipo de tanque encontrado: ' + tipo.Id + ' - Capacidad: ' + tipo.Capacidad__c);
+        System.debug(' Tipo de tanque encontrado: ' + tipo.Id + ' - Capacidad: ' + tipo.Capacidad__c);
 
         List<Tanque_Industrial__c> tanques = new List<Tanque_Industrial__c>();
         List<String> errores = new List<String>();
@@ -64,12 +64,12 @@ public with sharing class CargaMasivaTanquesCSV {
                     capacidadCSV = Decimal.valueOf(capacidadStr);
                 } catch (Exception e) {
                     errores.add('Fila ' + (i+1) + ': capacidad no numérica');
-                    System.debug('❌ Fila ' + (i+1) + ' descartada: capacidad no numérica');
+                    System.debug(' Fila ' + (i+1) + ' descartada: capacidad no numérica');
                     continue;
                 }
 
                 if (capacidadCSV != tipo.Capacidad__c) {
-                    System.debug('⚠️ Fila ' + (i+1) + ' descartada: capacidad (' + capacidadCSV + ') no coincide con tipo (' + tipo.Capacidad__c + ')');
+                    System.debug(' Fila ' + (i+1) + ' descartada: capacidad (' + capacidadCSV + ') no coincide con tipo (' + tipo.Capacidad__c + ')');
                     continue;
                 }
 
@@ -78,34 +78,34 @@ public with sharing class CargaMasivaTanquesCSV {
                 t.Numero_fabricacion__c = numeroFabricacion;
                 tanques.add(t);
 
-                System.debug('✅ Fila ' + (i+1) + ' válida. Tanque preparado para insertar.');
+                System.debug(' Fila ' + (i+1) + ' válida. Tanque preparado para insertar.');
             } else {
-                System.debug('⚠️ Fila ' + (i+1) + ' descartada: capacidad vacía');
+                System.debug(' Fila ' + (i+1) + ' descartada: capacidad vacía');
             }
         }
 
         if (!tanques.isEmpty()) {
-            System.debug('💾 Total de tanques válidos a insertar: ' + tanques.size());
+            System.debug(' Total de tanques válidos a insertar: ' + tanques.size());
 
             NumeroSerieGenerator.asignarNumeroSerie(tanques);
-            System.debug('🔢 Números de serie asignados');
+            System.debug(' Números de serie asignados');
 
             insert tanques;
-            System.debug('✅ Tanques insertados correctamente');
+            System.debug(' Tanques insertados correctamente');
 
             for (Tanque_Industrial__c t : tanques) {
-                System.debug('🌐 Generando link corto para tanque: ' + t.Id);
+                System.debug(' Generando link corto para tanque: ' + t.Id);
                 ObtenerlinkCortoBitly.procesarLinkCortoAsync(t.Id);
             }
         } else {
-            System.debug('🚫 No hay tanques válidos para insertar');
+            System.debug(' No hay tanques válidos para insertar');
         }
 
         if (!errores.isEmpty()) {
-            System.debug('⚠️ Errores encontrados durante la carga:\n' + String.join(errores, '\n'));
+            System.debug(' Errores encontrados durante la carga:\n' + String.join(errores, '\n'));
             throw new AuraHandledException('Errores en carga:\n' + String.join(errores, '\n'));
         }
 
-        System.debug('✅ FIN - crearTanquesDesdeCSV');
+        System.debug(' FIN - crearTanquesDesdeCSV');
         }
 }

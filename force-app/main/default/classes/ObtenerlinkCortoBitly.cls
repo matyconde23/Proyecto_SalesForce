@@ -9,8 +9,8 @@ public with sharing class ObtenerlinkCortoBitly {
      */
     @future(callout=true)
     public static void procesarLinkCortoAsync(String tanqueId) {
-        System.debug('🔁 [INICIO] procesarLinkCortoAsync');
-        System.debug('🆔 ID recibido: ' + tanqueId);
+        System.debug(' [INICIO] procesarLinkCortoAsync');
+        System.debug(' ID recibido: ' + tanqueId);
 
         try {
             // Obtener el tanque desde la base de datos
@@ -20,33 +20,33 @@ public with sharing class ObtenerlinkCortoBitly {
                 WHERE Id = :tanqueId 
                 LIMIT 1
             ];
-            System.debug('✅ Tanque encontrado: ' + tanque.Id);
+            System.debug(' Tanque encontrado: ' + tanque.Id);
 
             // Construir URL larga del registro en Lightning
             String baseUrl = URL.getOrgDomainUrl().toExternalForm();
-            System.debug('🌐 Dominio Salesforce: ' + baseUrl);
+            System.debug(' Dominio Salesforce: ' + baseUrl);
 
             String linkLargo = baseUrl + '/lightning/r/Tanque_Industrial__c/' + tanque.Id + '/view';
-            System.debug('🔗 URL larga generada: ' + linkLargo);
+            System.debug(' URL larga generada: ' + linkLargo);
 
             // Obtener la versión acortada usando la API de Bitly
             String shortUrl = obtenerShortLinkBitly(linkLargo);
-            System.debug('🔁 Resultado de obtenerShortLinkBitly: ' + shortUrl);
+            System.debug(' Resultado de obtenerShortLinkBitly: ' + shortUrl);
 
             // Si se obtuvo correctamente el link corto, se actualiza el tanque
             if (shortUrl != null) {
                 tanque.URL__c = shortUrl;
                 update tanque;
-                System.debug('✅ Link corto guardado en tanque: ' + shortUrl);
+                System.debug(' Link corto guardado en tanque: ' + shortUrl);
             } else {
-                System.debug('⚠️ No se generó el link corto (shortUrl es null)');
+                System.debug(' No se generó el link corto (shortUrl es null)');
             }
 
         } catch (Exception e) {
-            System.debug('❌ Excepción en procesarLinkCortoAsync: ' + e.getMessage());
+            System.debug(' Excepción en procesarLinkCortoAsync: ' + e.getMessage());
         }
 
-        System.debug('🔁 [FIN] procesarLinkCortoAsync');
+        System.debug(' [FIN] procesarLinkCortoAsync');
     }
 
     /**
@@ -56,7 +56,7 @@ public with sharing class ObtenerlinkCortoBitly {
      * @return Link corto generado por Bitly o null si hubo error.
      */
     private static String obtenerShortLinkBitly(String linkLargo) {
-    System.debug('➡️ Entrando a obtenerShortLinkBitly con URL: ' + linkLargo);
+    System.debug(' Entrando a obtenerShortLinkBitly con URL: ' + linkLargo);
 
     // Crear la solicitud HTTP
     HttpRequest req = new HttpRequest();
@@ -67,28 +67,28 @@ public with sharing class ObtenerlinkCortoBitly {
 
     // Armar payload JSON
     req.setBody('{"long_url": "' + linkLargo + '"}');
-    System.debug('📤 Payload enviado a Bitly: ' + req.getBody());
+    System.debug(' Payload enviado a Bitly: ' + req.getBody());
 
     Http http = new Http();
     try {
         // Enviar la solicitud a Bitly
         HttpResponse res = http.send(req);
-        System.debug('📥 Código de respuesta Bitly: ' + res.getStatusCode());
-        System.debug('📄 Cuerpo respuesta Bitly: ' + res.getBody());
+        System.debug(' Código de respuesta Bitly: ' + res.getStatusCode());
+        System.debug(' Cuerpo respuesta Bitly: ' + res.getBody());
 
         // Si la respuesta fue exitosa (200 o 201), extraer el link
         if (res.getStatusCode() == 200 || res.getStatusCode() == 201) {
             Map<String, Object> json = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
             String linkCorto = (String) json.get('link');
-            System.debug('✅ Link corto recibido: ' + linkCorto);
+            System.debug('Link corto recibido: ' + linkCorto);
             return linkCorto;
         } else {
-            System.debug('⚠️ Bitly respondió con código inesperado: ' + res.getStatusCode() + '. Usando link largo.');
-            return linkLargo; // ⚠️ Retornar el link largo si Bitly no respondió correctamente
+            System.debug(' Bitly respondió con código inesperado: ' + res.getStatusCode() + '. Usando link largo.');
+            return linkLargo; //  Retornar el link largo si Bitly no respondió correctamente
         }
 
     } catch (Exception e) {
-        System.debug('❌ Excepción al llamar a Bitly: ' + e.getMessage());
+        System.debug(' Excepción al llamar a Bitly: ' + e.getMessage());
         return linkLargo;
     } 
 }
