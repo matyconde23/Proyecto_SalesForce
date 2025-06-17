@@ -22,6 +22,18 @@ public with sharing class CrearOportunidadAutomatica {
         ];
         System.debug('🔍 Lead cargado: ' + lead);
 
+        // 🔒 Validar que exista al menos un tipo de tanque con la capacidad del lead
+        Boolean existeTipoConEsaCapacidad = [
+            SELECT COUNT()
+            FROM Tipo_de_tanque__c
+            WHERE Capacidad__c = :lead.Capacidad__c
+        ] > 0;
+
+        if (!existeTipoConEsaCapacidad) {
+            System.debug('❌ No existe ningún tipo de tanque con capacidad ' + lead.Capacidad__c);
+            throw new AuraHandledException('No existe ningún tipo de tanque con la capacidad indicada en el Lead (' + lead.Capacidad__c + '). Verificá los datos ingresados.');
+        }
+
         // Paso 1: Buscar tanques disponibles para la capacidad solicitada
         List<AggregateResult> disponiblesPorTipo = [
             SELECT Tipo_de_tanque__c tipoId, COUNT(Id) cantidad
@@ -90,6 +102,13 @@ public with sharing class CrearOportunidadAutomatica {
                 WHERE Id = :lead.ConvertedOpportunityId
                 LIMIT 1
             ];
+
+            // ✅ Evitar duplicación: si ya tiene tanque o pedido, no hacer nada
+            if (opp.Tanque_seleccionado__c != null || opp.Pedido_Tanque__c != null) {
+                System.debug('⚠️ La oportunidad ya tiene tanque o pedido asignado. Se evita duplicación.');
+                return opp;
+            }
+
         } else {
             opp = new Opportunity(
                 Name = 'Venta de Tanque - ' + lead.Company,
@@ -112,16 +131,21 @@ public with sharing class CrearOportunidadAutomatica {
 
             System.debug('✅ Tanque asignado y reservado: ' + tanqueAsignado.Id);
         } else {
-            Pedido_Tanque__c pedido = new Pedido_Tanque__c(
-                Estado__c = 'Pendiente',
-                Tipo_de_tanque__c = tipoSeleccionado.Id
-            );
-            insert pedido;
+            // Solo crear pedido si no hay uno ya asignado
+            if (opp.Pedido_Tanque__c == null) {
+                Pedido_Tanque__c pedido = new Pedido_Tanque__c(
+                    Estado__c = 'Pendiente',
+                    Tipo_de_tanque__c = tipoSeleccionado.Id
+                );
+                insert pedido;
 
-            opp.Pedido_Tanque__c = pedido.Id;
-            opp.Tanque_seleccionado__c = null;
+                opp.Pedido_Tanque__c = pedido.Id;
+                opp.Tanque_seleccionado__c = null;
 
-            System.debug('📋 Pedido creado y asignado: ' + pedido.Id);
+                System.debug('📋 Pedido creado y asignado: ' + pedido.Id);
+            } else {
+                System.debug('⚠️ La oportunidad ya tenía un pedido asignado. No se crea uno nuevo.');
+            }
         }
 
         // Actualizar la cuenta asociada con los valores del Lead

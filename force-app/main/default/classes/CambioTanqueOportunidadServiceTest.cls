@@ -2,29 +2,30 @@
 public class CambioTanqueOportunidadServiceTest {
 
     @isTest
-    static void testProcesarCambioDeTanque() {
-        // Crear tipo de tanque
-        Tipo_de_tanque__c tipo1 = new Tipo_de_tanque__c(Name = 'Tipo A', Capacidad__c = 3000, Precio_de_lista__c = 15000, Marca__c = 'TA');
-        Tipo_de_tanque__c tipo2 = new Tipo_de_tanque__c(Name = 'Tipo B', Capacidad__c = 5000, Precio_de_lista__c = 25000, Marca__c = 'TB');
-        insert new List<Tipo_de_tanque__c>{ tipo1, tipo2 };
+    static void testCambioDeTanqueActualizaEstadosYPrecio() {
+        // Crear tipos de tanque
+        Tipo_de_tanque__c tipoA = new Tipo_de_tanque__c(Name = 'Tipo A', Capacidad__c = 3000, Precio_de_lista__c = 15000, Marca__c = 'TA');
+        Tipo_de_tanque__c tipoB = new Tipo_de_tanque__c(Name = 'Tipo B', Capacidad__c = 5000, Precio_de_lista__c = 25000, Marca__c = 'TB');
+        insert new List<Tipo_de_tanque__c>{ tipoA, tipoB };
 
         // Crear tanques
-        Tanque_Industrial__c tanque1 = new Tanque_Industrial__c(Name = 'TA3000-001', Tipo_de_tanque__c = tipo1.Id, Estado__c = 'Reservado');
-        Tanque_Industrial__c tanque2 = new Tanque_Industrial__c(Name = 'TB5000-001', Tipo_de_tanque__c = tipo2.Id, Estado__c = 'Disponible');
-        insert new List<Tanque_Industrial__c>{ tanque1, tanque2 };
+        Tanque_Industrial__c tanqueA = new Tanque_Industrial__c(Name = 'TA3000-001', Tipo_de_tanque__c = tipoA.Id, Estado__c = 'Reservado');
+        Tanque_Industrial__c tanqueB = new Tanque_Industrial__c(Name = 'TB5000-001', Tipo_de_tanque__c = tipoB.Id, Estado__c = 'Disponible');
+        insert new List<Tanque_Industrial__c>{ tanqueA, tanqueB };
 
-        // Crear oportunidad con el tanque1
+        // Crear oportunidad con el tanque A
         Opportunity opp = new Opportunity(
-            Name = 'Test Oportunidad',
+            Name = 'Oportunidad de prueba',
             StageName = 'Prospecting',
-            CloseDate = Date.today().addDays(10),
-            Tanque_seleccionado__c = tanque1.Id
+            CloseDate = Date.today().addDays(7),
+            Tanque_seleccionado__c = tanqueA.Id
         );
         insert opp;
 
-        // Simular cambio de tanque en memoria
+        // Simular cambio de tanque en memoria (como si fuera trigger.before update)
         Opportunity oppActualizada = opp.clone(false, true, false, false);
-        oppActualizada.Tanque_seleccionado__c = tanque2.Id;
+        oppActualizada.Id = opp.Id;
+        oppActualizada.Tanque_seleccionado__c = tanqueB.Id;
 
         Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>{ opp.Id => opp };
 
@@ -32,15 +33,17 @@ public class CambioTanqueOportunidadServiceTest {
         CambioTanqueOportunidadService.procesarCambioDeTanque(new List<Opportunity>{ oppActualizada }, oldMap);
         Test.stopTest();
 
-        // Verificar estado de los tanques
-        Map<Id, Tanque_Industrial__c> tanques = new Map<Id, Tanque_Industrial__c>(
-            [SELECT Id, Estado__c FROM Tanque_Industrial__c WHERE Id IN :new List<Id>{tanque1.Id, tanque2.Id}]
-        );
+        // Verificar estados de los tanques
+        List<Tanque_Industrial__c> tanquesPost = [
+            SELECT Id, Estado__c FROM Tanque_Industrial__c WHERE Id IN :new List<Id>{tanqueA.Id, tanqueB.Id}
+        ];
+        Map<Id, Tanque_Industrial__c> tanqueMap = new Map<Id, Tanque_Industrial__c>(tanquesPost);
 
-        System.assertEquals('Disponible', tanques.get(tanque1.Id).Estado__c, 'Tanque anterior debe quedar como Disponible');
-        System.assertEquals('Reservado', tanques.get(tanque2.Id).Estado__c, 'Tanque nuevo debe quedar como Reservado');
+        System.assertEquals('Disponible', tanqueMap.get(tanqueA.Id).Estado__c, 'El tanque anterior debe quedar como Disponible');
+        System.assertEquals('Reservado', tanqueMap.get(tanqueB.Id).Estado__c, 'El nuevo tanque debe quedar como Reservado');
 
-        // Verificar que se actualizó el precio de venta en memoria
-        System.assertEquals(tipo2.Precio_de_lista__c, oppActualizada.Precio_de_venta__c, 'Precio de venta debe coincidir con el precio de lista del tanque nuevo');
+        // Verificar precio de venta actualizado en memoria
+        System.assertEquals(tipoB.Precio_de_lista__c, oppActualizada.Precio_de_venta__c, 'Debe actualizarse el precio de venta al del nuevo tipo de tanque');
     }
+
 }

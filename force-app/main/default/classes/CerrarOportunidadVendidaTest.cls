@@ -1,5 +1,5 @@
 @isTest
-public class OpportunityCloseWonTest {
+public class CerrarOportunidadVendidaTest {
     
 
     @isTest
@@ -37,7 +37,7 @@ public class OpportunityCloseWonTest {
 
         // Ejecutar método
         Test.startTest();
-        OpportunityCloseWon.procesarOportunidadesCerradas(new List<Id>{ opp.Id });
+        CerrarOportunidadVendida.procesarOportunidadesCerradas(new List<Id>{ opp.Id });
         Test.stopTest();
 
         // Verificar tanque actualizado a "Vendido"

@@ -1,5 +1,5 @@
 @isTest
-public class UpdateMarcaPreferidaTest {
+public class ActualizarMarcaPreferidaTest {
 
     @isTest
     static void testActualizarMarcaDesdeUltimoTanque() {
