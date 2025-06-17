@@ -62,7 +62,7 @@ public with sharing class ObtenerlinkCortoBitly {
     HttpRequest req = new HttpRequest();
     req.setEndpoint('https://api-ssl.bitly.com/v4/shorten');
     req.setMethod('POST');
-    req.setHeader('Authorization', 'Bearer 72d163fbc1da0ab5fa45b04b7e0adc6843c3878e'); // 🔐 Token Bitly (¡debe ocultarse en producción!)
+    req.setHeader('Authorization', 'Bearer 4a729ff114cb47bdd7fee13d18fc074193baafc4'); // 🔐 Token Bitly (¡debe ocultarse en producción!)
     req.setHeader('Content-Type', 'application/json');
 
     // Armar payload JSON
