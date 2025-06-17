@@ -5,7 +5,7 @@ public with sharing class ObtenerlinkCortoBitly {
      * 
      * Este método debe ejecutarse con anotación @future(callout=true) ya que realiza una llamada HTTP externa.
      * 
-     * @param tanqueId Id del tanque al que se le asignará el link corto.
+     * Id del tanque al que se le asignará el link corto.
      */
     @future(callout=true)
     public static void procesarLinkCortoAsync(String tanqueId) {
@@ -62,7 +62,7 @@ public with sharing class ObtenerlinkCortoBitly {
     HttpRequest req = new HttpRequest();
     req.setEndpoint('https://api-ssl.bitly.com/v4/shorten');
     req.setMethod('POST');
-    req.setHeader('Authorization', 'Bearer eecf4f1bdb9e0d55f3b850a1de2dbfbe897259a4'); // 🔐 Token Bitly (¡debe ocultarse en producción!)
+    req.setHeader('Authorization', 'Bearer 72d163fbc1da0ab5fa45b04b7e0adc6843c3878e'); // 🔐 Token Bitly (¡debe ocultarse en producción!)
     req.setHeader('Content-Type', 'application/json');
 
     // Armar payload JSON

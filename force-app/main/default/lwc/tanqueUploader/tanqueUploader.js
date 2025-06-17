@@ -78,14 +78,13 @@ export default class TanqueUploader extends LightningElement {
                 console.log('✅ Datos filtrados para Apex:', filasValidas);
 
                 this.datosPrevios = filasValidas;
-                const cantidad = filasValidas.length;
-
+                
                 crearTanquesDesdeCSV({
                     tipoTanqueId: this.tipoSeleccionado,
                     datos: filasValidas
                 })
                     .then(() => {
-                        this.mostrarExito(`Se cargaron ${cantidad} tanques correctamente.`);
+                        this.mostrarExito('Los tanques se cargaron correctamente');
                         console.log('✅ Tanques creados correctamente.');
                     })
                     .catch((error) => {
